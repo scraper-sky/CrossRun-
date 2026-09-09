@@ -1,0 +1,17 @@
+# What EAS must not upload (it reads this file from the git root).
+# Everything the Expo shell needs, including the synced game files, stays in.
+node_modules/
+expo-app/node_modules/
+expo-app/.expo/
+expo-app/ios/
+expo-app/android/
+server/node_modules/
+ios/
+www/
+wood_ui_itch/
+wood_ui_itch.zip
+crossword_game.zip
+store/
+*.clues.json
+*.grids.json
+.DS_Store
