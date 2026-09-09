@@ -87,10 +87,14 @@ function capMask(D, capFrac) {
   return m;
 }
 
-function fillGrid(template, bias, capFrac = 1) {
+function fillGrid(template, bias, capFrac = 1, opts = {}) {
+  const rng = opts.rng || Math.random;
   const slots = slotsOf(template);
   const caps = {};
-  for (const n of Object.keys(IDX)) caps[n] = capMask(IDX[n], capFrac);
+  for (const n of Object.keys(IDX)) {
+    caps[n] = capMask(IDX[n], capFrac);
+    if (opts.mask && opts.mask[n]) for (let k = 0; k < caps[n].length; k++) caps[n][k] &= opts.mask[n][k];
+  }
   const cells = new Map();
   const assigned = new Array(slots.length).fill(null);
   const used = new Set();
@@ -136,7 +140,7 @@ function fillGrid(template, bias, capFrac = 1) {
     // pick in rank order but weighted toward common words
     const pool = best.slice(), tries = [];
     while (pool.length && tries.length < 25)
-      tries.push(pool.splice(Math.floor(Math.pow(Math.random(), bias) * pool.length), 1)[0]);
+      tries.push(pool.splice(Math.floor(Math.pow(rng(), bias) * pool.length), 1)[0]);
     for (const w of tries) {
       const prev = cs.map(([r, c]) => cells.get(key(r, c)));
       cs.forEach(([r, c], p) => cells.set(key(r, c), w[p]));
@@ -172,20 +176,22 @@ const capFor = (level) => Math.min(1, 0.35 + 0.08 * (level - 1));
 // how strongly the fill leans toward common words: 3.5 at level 1, floor of 1.2
 const biasFor = (level) => Math.max(1.2, 3.5 - 0.3 * (level - 1));
 
-function makePuzzle(level) {
+function makePuzzle(level, opts = {}) {
+  const rng = opts.rng || Math.random;
   const tier = tierFor(level);
   const bias = biasFor(level);
   // a tight cap can make a template unfillable; loosen it a little per attempt
   for (let attempt = 0; attempt < 12; attempt++) {
     const cap = Math.min(1, capFor(level) + 0.05 * attempt);
-    const t = TEMPLATES[tier.templates[Math.floor(Math.random() * tier.templates.length)]];
-    const r = fillGrid(t, bias, cap);
+    const t = TEMPLATES[tier.templates[Math.floor(rng() * tier.templates.length)]];
+    const r = fillGrid(t, bias, cap, opts);
     if (r) return buildPuzzle(r);
   }
-  for (;;) {
-    const r = fillGrid(TEMPLATES[5], 2, 1);
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const r = fillGrid(TEMPLATES[5], 2, 1, opts);
     if (r) return buildPuzzle(r);
   }
+  return null;
 }
 
 function buildPuzzle(f) {
@@ -250,6 +256,16 @@ const bundleReady = (typeof window !== "undefined" && window.CROSSRUN_BUNDLE
     p.clued = p.words.every((w) => b.clues[w] && !BLOCKED.has(w));
     p.sig = p.t + ":" + p.w.join(","); // stable identity across bundle rebuilds
   });
+  // Which of the game's own words carry verified clues: the filler draws fresh
+  // grids from exactly these, so every level is new and every clue is checked.
+  b.cluedMask = {};
+  let cluedCount = 0;
+  for (const n of Object.keys(IDX)) {
+    const D = IDX[n], m = new Uint32Array(D.nw);
+    for (let i = 0; i < D.count; i++) if (b.clues[D.words[i]] && !BLOCKED.has(D.words[i])) { m[i >> 5] |= 1 << (i & 31); cluedCount++; }
+    b.cluedMask[n] = m;
+  }
+  b.cluedCount = cluedCount;
   return b;
 });
 
@@ -295,12 +311,24 @@ function pickFromBundle(b, level, opts = {}) {
   return null;
 }
 
-// One entry point for a level: bundle if possible, else generate and clue live.
-async function buildLevel(level, opts) {
+// One entry point for a level. Preferred: fill a brand-new grid on the device
+// from the words that have verified clues (seeded for the daily run), and
+// attach the clue tier for the level. Fallbacks: a pre-built bundle puzzle,
+// then live generation.
+async function buildLevel(level, opts = {}) {
   const b = await bundleReady;
+  if (b && b.cluedCount > 300) {
+    const p = makePuzzle(level, { rng: opts.rng, mask: b.cluedMask });
+    if (p) {
+      const tier = tierFor(level);
+      p.entries.forEach((e) => (e.clue = b.clues[e.word][tier.clueTier]));
+      p.source = "fresh";
+      return p;
+    }
+  }
   const fromBundle = pickFromBundle(b, level, opts);
   if (fromBundle) return fromBundle;
-  const p = makePuzzle(level);
+  const p = makePuzzle(level) || makePuzzle(1);
   p.source = "live";
   return attachClues(p, level);
 }
