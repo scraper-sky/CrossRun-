@@ -790,7 +790,7 @@ export default function CrossRun() {
   useEffect(() => { setSoundEnabled(save.sound !== false); }, [save.sound]);
   useEffect(() => { setMusicEnabled(save.music !== false); }, [save.music]);
   // the home and game-over screens get the ambient pad, play gets the gentle loop
-  useEffect(() => { wantMusic(screen === "play" ? "calm" : "ambient"); }, [screen]);
+  useEffect(() => { wantMusic(screen === "play" ? "play" : "ambient"); }, [screen]);
   const [level, setLevel] = useState(1);
   const [points, setPoints] = useState(0);
   const [puzzle, setPuzzle] = useState(null);

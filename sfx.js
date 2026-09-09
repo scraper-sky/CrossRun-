@@ -75,17 +75,29 @@ const SOUNDS = {
 };
 
 /* ---------------- music ----------------
- * Two CC0 loops (see assets/music/CREDITS.txt): a soft ambient pad for the
- * home and game-over screens, a gentle synth loop while playing. They run
- * through the same audio context as the effects, looped sample-accurately
- * with a short crossfade when the screen changes. */
+ * CC0 tracks (see assets/music/CREDITS.txt). The home and game-over screens
+ * loop a soft ambient pad. While playing, a small playlist of lo-fi songs
+ * plays through in a shuffled order, each once, then reshuffles, so a long
+ * session never hears the same song twice in a row. Everything runs through
+ * the effects' audio context with short crossfades. */
 let musicOn = true;
 let musicBase = "";
-let musicWanted = null;          // "ambient" | "calm" | null
+let musicWanted = null;          // "ambient" | "play" | null
 let musicPlaying = null;         // { name, src, gain }
 const musicBuffers = {};
-const TRACKS = { ambient: "assets/music/ambient.m4a", calm: "assets/music/calm.mp3" };
-const VOLUME = { ambient: 0.4, calm: 0.3 };
+const TRACKS = { ambient: "assets/music/ambient.m4a", tea: "assets/music/tea.m4a", cafe: "assets/music/cafe.m4a", rain: "assets/music/rain.m4a", morning: "assets/music/morning.m4a" };
+const VOLUME = { ambient: 0.4, tea: 0.32, cafe: 0.32, rain: 0.32, morning: 0.32 };
+const PLAYLIST = ["tea", "cafe", "rain", "morning"];
+let queue = [];
+
+const reshuffle = () => {
+  const q = PLAYLIST.slice();
+  for (let i = q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; }
+  // never start the new order with the song that just ended
+  if (musicPlaying && q[0] === musicPlaying.name && q.length > 1) q.push(q.shift());
+  queue = q;
+};
+const nextSong = () => { if (!queue.length) reshuffle(); return queue.shift(); };
 
 export function setMusicBase(base) { musicBase = base || ""; }
 export function setMusicEnabled(on) {
@@ -93,12 +105,17 @@ export function setMusicEnabled(on) {
   if (!musicOn) fadeOutMusic();
   else startMusic();
 }
-export function wantMusic(track) { musicWanted = track; startMusic(); }
+export function wantMusic(kind) {
+  if (musicWanted === kind) return;
+  musicWanted = kind;
+  startMusic();
+}
 
 function fadeOutMusic() {
   if (!musicPlaying || !ctx) return;
   const { src, gain } = musicPlaying;
   musicPlaying = null;
+  src.onended = null;
   try {
     gain.gain.cancelScheduledValues(ctx.currentTime);
     gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
@@ -116,24 +133,31 @@ async function loadTrack(name) {
   return buf;
 }
 
+let starting = false;
 // Safe to call often: from screen changes and from every user gesture, so a
 // track requested before audio was unlocked starts on the next tap.
 export async function startMusic() {
-  if (!musicOn || !musicWanted || !ctx || !unlocked) return;
-  const name = musicWanted;
-  if (musicPlaying && musicPlaying.name === name) return;
+  if (!musicOn || !musicWanted || !ctx || !unlocked || starting) return;
+  const kind = musicWanted;
+  if (musicPlaying && (kind === "ambient" ? musicPlaying.name === "ambient" : musicPlaying.name !== "ambient")) return;
+  const name = kind === "ambient" ? "ambient" : nextSong();
+  starting = true;
   try {
     const buf = await loadTrack(name);
-    if (musicWanted !== name || !musicOn) return;             // the screen moved on while loading
-    if (musicPlaying && musicPlaying.name === name) return;
+    if (musicWanted !== kind || !musicOn) return;
     fadeOutMusic();
-    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = kind === "ambient";
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(VOLUME[name], ctx.currentTime + 1.2);
     src.connect(gain); gain.connect(ctx.destination); src.start();
     musicPlaying = { name, src, gain };
-  } catch (e) {}
+    if (kind === "play") {
+      src.onended = () => { if (musicPlaying && musicPlaying.src === src) { musicPlaying = null; startMusic(); } };
+      const upcoming = queue[0] || PLAYLIST[0];
+      loadTrack(upcoming).catch(() => {}); // warm the next song so the handoff is quick
+    }
+  } catch (e) {} finally { starting = false; }
 }
 export function stopMusic() { musicWanted = null; fadeOutMusic(); }
 

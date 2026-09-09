@@ -1,3 +1,6 @@
-calm.mp3     "Calm Loop" by wipics, CC0 (public domain). https://opengameart.org/content/calm-loop
 ambient.m4a  "Ambient Relaxing Loop" by isaiah658, CC0 (public domain). https://opengameart.org/content/ambient-relaxing-loop
-             Converted from the original WAV to AAC for size.
+tea.m4a      "A cup of tea" from "lofi Compilation" by TAD, CC0 (public domain). https://opengameart.org/content/lofi-compilation
+cafe.m4a     "Cat caffe" from the same compilation by TAD, CC0.
+rain.m4a     "Rainy Forest" from the same compilation by TAD, CC0.
+morning.m4a  "Morning rain" from the same compilation by TAD, CC0.
+All converted to AAC for size.
