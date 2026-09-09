@@ -337,6 +337,7 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
       <div className="cardrun">
         <div className="col card tall rules">
           <h2>How to play</h2>
+          <div className="rd" style={{ marginBottom: 6 }}>No clock in this mode. The pace rises as you score, and the run ends when the well overflows.</div>
           {RULES.map((r) => (
             <div key={r.t} className="rule">
               <div className="rt">{r.t}</div>
@@ -349,7 +350,6 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
               ) : null}
             </div>
           ))}
-          <div className="rd" style={{ marginTop: 8 }}>No clock in this mode. The pace rises as you score, and the run ends when the well overflows.</div>
         </div>
         <button className="big full" style={{ marginTop: 12 }} onClick={deal}>Deal</button>
       </div>
@@ -394,7 +394,7 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
 
 export const cardCss = (T, SERIF) => `
   .cr .cardrun { width:100%; max-width:430px; display:flex; flex-direction:column; align-items:center; gap:8px; --cw:60px; --ch:74px; }
-  .cr .rules { padding-bottom:72px; }
+  .cr .rules { padding-bottom:120px; padding-left:36px; padding-right:36px; }
   .cr .rules h2 { margin:0 0 10px; font-size:24px; font-weight:700; }
   .cr .rules .rule { padding:8px 0; border-top:1px solid ${T.paperBorder}; }
   .cr .rules .rt { font-family:${SERIF}; font-size:17px; font-weight:700; }
