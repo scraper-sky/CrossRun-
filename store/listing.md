@@ -54,10 +54,10 @@ Tier 2, $1.99 USD. Set availability to all countries.
 First release.
 
 ## Support URL
-Any page you control. The GitHub repo, a Notion page, or the Railway server used for GUIDE all work.
+https://github.com/scraper-sky/CrossRun-
 
 ## Privacy policy URL
-Host `store/privacy.html` somewhere public and paste its address. See README for options.
+https://scraper-sky.github.io/CrossRun-/privacy.html (enable GitHub Pages: repo Settings > Pages > Source: Deploy from a branch, main, /docs)
 
 ## App Privacy questionnaire
 Data collection: select "No, we do not collect data from this app." CrossRun stores game progress on the device only and makes no network requests.
