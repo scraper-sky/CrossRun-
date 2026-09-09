@@ -1,0 +1,11 @@
+{
+  "appId": "com.jerryxiao.crossrun",
+  "appName": "CrossRun",
+  "webDir": "www",
+  "backgroundColor": "#5C3B22",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#5C3B22",
+    "preferredContentMode": "mobile"
+  }
+}

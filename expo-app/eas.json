@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 14.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "resourceClass": "medium",
+      "ios": {
+        "buildConfiguration": "Release"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "jerryxiao45@gmail.com",
+        "ascAppId": "6809106685"
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "CrossRun!",
+    "slug": "crossrun",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#5C3B22",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#5C3B22"
+    },
+    "ios": {
+      "bundleIdentifier": "com.jerryxiao.crossrun",
+      "supportsTablet": false,
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIRequiresFullScreen": true
+      }
+    },
+    "android": {
+      "package": "com.jerryxiao.crossrun",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#5C3B22"
+      }
+    },
+    "owner": "scraper-sky",
+    "extra": {
+      "eas": {
+        "projectId": "62e534b6-2099-4a97-b7f7-0c6683c639ed"
+      }
+    }
+  }
+}
