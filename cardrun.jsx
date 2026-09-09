@@ -394,7 +394,7 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
 
 export const cardCss = (T, SERIF) => `
   .cr .cardrun { width:100%; max-width:430px; display:flex; flex-direction:column; align-items:center; gap:8px; --cw:60px; --ch:74px; }
-  .cr .rules { padding-bottom:58px; }
+  .cr .rules { padding-bottom:72px; }
   .cr .rules h2 { margin:0 0 10px; font-size:24px; font-weight:700; }
   .cr .rules .rule { padding:8px 0; border-top:1px solid ${T.paperBorder}; }
   .cr .rules .rt { font-family:${SERIF}; font-size:17px; font-weight:700; }
