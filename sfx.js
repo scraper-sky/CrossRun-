@@ -74,6 +74,69 @@ const SOUNDS = {
   coin: () => { tone({ freq: 1320, type: "square", dur: 0.06, gain: 0.05 }); tone({ freq: 1760, type: "square", dur: 0.1, gain: 0.05, at: 0.06 }); },
 };
 
+/* ---------------- music ----------------
+ * Two CC0 loops (see assets/music/CREDITS.txt): a soft ambient pad for the
+ * home and game-over screens, a gentle synth loop while playing. They run
+ * through the same audio context as the effects, looped sample-accurately
+ * with a short crossfade when the screen changes. */
+let musicOn = true;
+let musicBase = "";
+let musicWanted = null;          // "ambient" | "calm" | null
+let musicPlaying = null;         // { name, src, gain }
+const musicBuffers = {};
+const TRACKS = { ambient: "assets/music/ambient.m4a", calm: "assets/music/calm.mp3" };
+const VOLUME = { ambient: 0.4, calm: 0.3 };
+
+export function setMusicBase(base) { musicBase = base || ""; }
+export function setMusicEnabled(on) {
+  musicOn = !!on;
+  if (!musicOn) fadeOutMusic();
+  else startMusic();
+}
+export function wantMusic(track) { musicWanted = track; startMusic(); }
+
+function fadeOutMusic() {
+  if (!musicPlaying || !ctx) return;
+  const { src, gain } = musicPlaying;
+  musicPlaying = null;
+  try {
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.7);
+    src.stop(ctx.currentTime + 0.75);
+  } catch (e) {}
+}
+
+async function loadTrack(name) {
+  if (musicBuffers[name]) return musicBuffers[name];
+  const res = await fetch(musicBase + TRACKS[name]);
+  const data = await res.arrayBuffer();
+  const buf = await new Promise((ok, bad) => { const p = ctx.decodeAudioData(data, ok, bad); if (p && p.then) p.then(ok, bad); });
+  musicBuffers[name] = buf;
+  return buf;
+}
+
+// Safe to call often: from screen changes and from every user gesture, so a
+// track requested before audio was unlocked starts on the next tap.
+export async function startMusic() {
+  if (!musicOn || !musicWanted || !ctx || !unlocked) return;
+  const name = musicWanted;
+  if (musicPlaying && musicPlaying.name === name) return;
+  try {
+    const buf = await loadTrack(name);
+    if (musicWanted !== name || !musicOn) return;             // the screen moved on while loading
+    if (musicPlaying && musicPlaying.name === name) return;
+    fadeOutMusic();
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(VOLUME[name], ctx.currentTime + 1.2);
+    src.connect(gain); gain.connect(ctx.destination); src.start();
+    musicPlaying = { name, src, gain };
+  } catch (e) {}
+}
+export function stopMusic() { musicWanted = null; fadeOutMusic(); }
+
 export function play(name, arg) {
   if (!enabled || !unlocked || !ctx) return;
   // iOS can leave the context "interrupted" or "suspended" after a call, the

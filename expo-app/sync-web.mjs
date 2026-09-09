@@ -9,7 +9,7 @@ fs.copyFileSync(path.join(ROOT, "crossrun.jsx"), path.join(HERE, "src/crossrun.j
 fs.copyFileSync(path.join(ROOT, "cardrun.jsx"), path.join(HERE, "src/cardrun.jsx"));
 fs.copyFileSync(path.join(ROOT, "sfx.js"), path.join(HERE, "src/sfx.js"));
 fs.copyFileSync(path.join(ROOT, "bundle.json"), path.join(HERE, "src/bundle.json"));
-fs.rmSync(path.join(HERE, "public/assets/wood"), { recursive: true, force: true });
-fs.cpSync(path.join(ROOT, "assets/wood"), path.join(HERE, "public/assets/wood"), { recursive: true });
+fs.rmSync(path.join(HERE, "public/assets"), { recursive: true, force: true });
+fs.cpSync(path.join(ROOT, "assets"), path.join(HERE, "public/assets"), { recursive: true });
 const n = fs.readdirSync(path.join(HERE, "public/assets/wood")).length;
 console.log(`synced crossrun.jsx, bundle.json and ${n} art files into expo-app`);

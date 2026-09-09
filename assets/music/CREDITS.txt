@@ -1,0 +1,3 @@
+calm.mp3     "Calm Loop" by wipics, CC0 (public domain). https://opengameart.org/content/calm-loop
+ambient.m4a  "Ambient Relaxing Loop" by isaiah658, CC0 (public domain). https://opengameart.org/content/ambient-relaxing-loop
+             Converted from the original WAV to AAC for size.

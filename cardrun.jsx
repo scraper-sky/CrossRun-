@@ -9,9 +9,9 @@ import { play } from "./sfx.js";
  *   - a poker row: a full row of five that makes pair or better
  * Cleared cards vanish, the cards above fall, and anything that forms as
  * they land chains for more. A full row that is only high card, with no set
- * or run in it, turns to dead weight until you clear something right on top
- * of it. No clock: the pace rises as you score, and the run ends when the
- * well overflows.
+ * or run in it, turns to dead weight until three of a kind or better clears
+ * right on top of it; a lone pair only takes its own row. No clock: the pace
+ * rises as you score, and the run ends when the well overflows.
  */
 
 export const COLS = 5;
@@ -134,7 +134,7 @@ const RULES = [
   { t: "Cards fall in pairs", d: "Tap a column to drop them there. Tap Rotate to turn the pair.", ex: [C(12, 0), C(4, 1)], stack: true },
   { t: "Three of a kind clears", d: "Same rank, touching in a line, across or down.", ex: [C(7, 0), C(7, 1), C(7, 2)] },
   { t: "A run clears", d: "Three or more of one suit in order.", ex: [C(5, 3), C(6, 3), C(7, 3)] },
-  { t: "Fill a row: a pair clears it", d: "Any full row of five with a pair or better clears. Better hands pay more. A row with no pair goes dead until you clear something on top of it.", ex: [C(13, 0), C(13, 1), C(3, 2), C(9, 3), C(11, 1)], note: "the pair of kings clears this row" },
+  { t: "Fill a row: a pair clears it", d: "Any full row of five with a pair or better clears. Better hands pay more. A row with no pair goes dead until three of a kind or better clears right on top of it.", ex: [C(13, 0), C(13, 1), C(3, 2), C(9, 3), C(11, 1)], note: "the pair of kings clears this row" },
   { t: "Chains pay double", d: "Cards drop after a clear. Anything that forms as they land counts again, for more." },
 ];
 
@@ -237,7 +237,9 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
       return;
     }
     const toClear = new Set(all.flatMap((l) => l.cells.map(([r, c]) => r + "," + c)));
-    const rowsTouched = new Set(all.flatMap((l) => l.cells.map(([r]) => r)));
+    // a lone pair only clears its own row; three of a kind or better (sets, runs, strong hands) also frees a dead row beneath
+    const sweepers = all.filter((l) => l.kind !== "hand" || l.rank >= 3);
+    const rowsTouched = new Set(sweepers.flatMap((l) => l.cells.map(([r]) => r)));
     let swept = 0;
     for (let r = 0; r < ROWS - 1; r++) if (rowsTouched.has(r) && deadRows[r + 1]) { deadRows[r + 1] = false; swept++; for (let c = 0; c < COLS; c++) toClear.add(r + 1 + "," + c); }
 
@@ -392,6 +394,7 @@ export default function CardRun({ level, active, onClear, onDead, onLevelUp, onO
 
 export const cardCss = (T, SERIF) => `
   .cr .cardrun { width:100%; max-width:430px; display:flex; flex-direction:column; align-items:center; gap:8px; --cw:60px; --ch:74px; }
+  .cr .rules { padding-bottom:58px; }
   .cr .rules h2 { margin:0 0 10px; font-size:24px; font-weight:700; }
   .cr .rules .rule { padding:8px 0; border-top:1px solid ${T.paperBorder}; }
   .cr .rules .rt { font-family:${SERIF}; font-size:17px; font-weight:700; }
