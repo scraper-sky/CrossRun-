@@ -4,6 +4,7 @@ import { View, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import { setAudioModeAsync } from "expo-audio";
 import CrossRunDom from "./src/CrossRunDom";
 
 const storageGet = async (key) => AsyncStorage.getItem(key);
@@ -19,6 +20,12 @@ const haptic = async (kind) => {
 };
 
 export default function App() {
+  // Put the audio session in playback mode so the game's music and effects
+  // come out of the speaker even with the ring/silent switch on, like any
+  // music app. Without this, web audio is treated as ambient and muted.
+  React.useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "mixWithOthers", shouldPlayInBackground: false }).catch(() => {});
+  }, []);
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.root} edges={["top", "bottom"]}>

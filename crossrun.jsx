@@ -1967,7 +1967,7 @@ export default function CrossRun() {
             ) : showHint ? (
               <div className="note hint-note">
                 <div className="t">Tap a square and type</div>
-                <div className="s">Space or a second tap flips across and down</div>
+                <div className="s">Space flips direction. Skip word fills it in for no points.</div>
               </div>
             ) : null}
             <input
@@ -2015,7 +2015,7 @@ export default function CrossRun() {
 
           <div className="col tray actions">
             <button className="ghost outline c-light" onClick={toggleDir}>{cursor.dir === "A" ? "Across ›" : "Down ›"}</button>
-            <button className="ghost outline c-grey" onClick={skipWord}>Give up</button>
+            <button className="ghost outline c-grey" onClick={skipWord}>Skip word</button>
             <button className="ghost outline c-yellow" onClick={useHint} style={{ color: points >= 25 ? "#2A1C10" : "#6B5A45" }}>Reveal · 25</button>
             <button className="ghost outline c-red" onClick={endRun}>End run</button>
           </div>
