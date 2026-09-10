@@ -1067,7 +1067,9 @@ export default function CrossRun() {
       if (got === e.word) newly.push(e.id);
     });
     if (newly.length) setSolvedIds((s) => [...s, ...newly]);
-    const earned = newly.filter((id) => !(exclude && exclude.has(id)));
+    // a skip fills letters in, and those letters can complete crossing words;
+    // none of that was solved by the player, so nothing from a skip earns points
+    const earned = exclude === "all" ? [] : newly.filter((id) => !(exclude && exclude.has(id)));
     if (earned.length) {
       // each word extends the streak; points per word climb with it
       let c = combo, gained = 0;
@@ -1098,7 +1100,7 @@ export default function CrossRun() {
 
   const clearLevel = (exclude) => {
     setStatus("cleared");
-    const clean = skippedIds.length === 0 && !(exclude && exclude.size) && hintsThisGrid.current === 0;
+    const clean = skippedIds.length === 0 && !exclude && hintsThisGrid.current === 0;
     const elapsed = (Date.now() - gridStart.current) / 1000;
     const spare = Math.max(0, PAR(puzzle.rows) - elapsed);
     const speed = Math.round(spare / 2);
@@ -1181,7 +1183,7 @@ export default function CrossRun() {
     play("skip");
     setCombo(0);
     setEntered(next);
-    checkProgress(next, new Set([e.id]));
+    checkProgress(next, "all");
   };
 
   // keep the keyboard up while a level is live, put it away otherwise
