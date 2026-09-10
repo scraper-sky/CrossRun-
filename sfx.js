@@ -10,8 +10,31 @@ let unlocked = false;
 export function setSoundEnabled(on) { enabled = !!on; }
 export function soundEnabled() { return enabled; }
 
+// A tiny silent WAV. Keeping a media element playing makes WebKit treat the
+// page as media playback, which iOS does not mute with the ring/silent
+// switch; pure Web Audio alone counts as "ambient" and is muted.
+let keepAlive = null;
+function silentWav() {
+  const rate = 8000, seconds = 1, n = rate * seconds, buf = new ArrayBuffer(44 + n);
+  const v = new DataView(buf);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, "RIFF"); v.setUint32(4, 36 + n, true); str(8, "WAVE"); str(12, "fmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate, true);
+  v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, "data"); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  let bin = ""; const bytes = new Uint8Array(buf); for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return "data:audio/wav;base64," + btoa(bin);
+}
+function keepSessionAlive() {
+  try {
+    if (!keepAlive) { keepAlive = document.createElement("audio"); keepAlive.src = silentWav(); keepAlive.loop = true; keepAlive.setAttribute("playsinline", ""); }
+    if (keepAlive.paused) { const p = keepAlive.play(); if (p && p.catch) p.catch(() => {}); }
+  } catch (e) {}
+}
+
 export function unlockSound() {
   try {
+    keepSessionAlive();
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state !== "running") ctx.resume();
     if (!unlocked) {

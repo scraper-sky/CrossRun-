@@ -1340,6 +1340,7 @@ export default function CrossRun() {
     /* four equal plank buttons under the board */
     .cr .tray { background:${img(T.tone === "light" ? "tray_wide" : "plank_light")} center / 100% 100% no-repeat; padding:14px 16px 16px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.3)); }
     .cr .actions { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:6px; }
+    .cr .actions.three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap:8px; }
     .cr .actions .ghost.outline { width:100%; min-width:0; padding:13px 2px; font-size:13px; overflow:hidden; text-overflow:ellipsis; }
     /* buttons: the kit's planks */
     .cr .big { background: ${img("btn_green")} center / 100% 100% no-repeat; color:#fff; font-family: ${SERIF}; font-weight:700; font-size:19px;
@@ -1969,7 +1970,7 @@ export default function CrossRun() {
             ) : showHint ? (
               <div className="note hint-note">
                 <div className="t">Tap a square and type</div>
-                <div className="s">Space flips direction. Skip word fills it in for no points.</div>
+                <div className="s">Space or a second tap flips across and down</div>
               </div>
             ) : null}
             <input
@@ -2015,9 +2016,8 @@ export default function CrossRun() {
             )}
           </div>
 
-          <div className="col tray actions">
+          <div className="col tray actions three">
             <button className="ghost outline c-light" onClick={toggleDir}>{cursor.dir === "A" ? "Across ›" : "Down ›"}</button>
-            <button className="ghost outline c-grey" onClick={skipWord}>Skip word</button>
             <button className="ghost outline c-yellow" onClick={useHint} style={{ color: points >= 25 ? "#2A1C10" : "#6B5A45" }}>Reveal · 25</button>
             <button className="ghost outline c-red" onClick={endRun}>End run</button>
           </div>
